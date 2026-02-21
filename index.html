@@ -77,14 +77,10 @@ h2{
   position:absolute;
   bottom:200px;
   right:200px;
-  padding:20px 30px;
-  background:rgba(255,255,255,0.06);
-  border-radius:16px;
-}
-
-.corner-logo img{
   width:377px;
-  display:block;
+  opacity:0.5;
+.logo img {
+  filter:brightness(0) invert(1)
 }
 
 /* ローディング */
@@ -235,14 +231,13 @@ function showMenu(){
     grid.appendChild(card);
   });
 
-const logoWrap = document.createElement("div");
-logoWrap.className = "corner-logo";
-
-logoWrap.innerHTML = `
-  <img src="IMG_5137.png">
-`;
-
-app.appendChild(logoWrap);
+  const logo = document.createElement("img");
+  logo.src = "IMG_5137.png";
+  logo.className = "corner-logo";
+  app.appendChild(logo);
+  .logo img {
+    filter:brightness(0) invert(1)
+}
 
 /* ⭐ これが戻る問題の完全解決部分 */
 window.addEventListener("pageshow", function() {
