@@ -1,1 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
+<title>AR Viewer</title>
+
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-XXXXXXXXXX');
+</script>
+
+<style>
+body{
+  margin:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  font-family:sans-serif;
+}
+</style>
+</head>
+<body>
+
+<div>3Dモデルを読み込み中...</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const model = params.get("model");
+
+// ===== モデルURL定義 =====
+const models = {
+  A: {
+    ios: "https://yourname.github.io/ar/A.usdz",
+    android: "https://yourname.github.io/ar/A.glb"
+  },
+  B: {
+    ios: "https://yourname.github.io/ar/B.usdz",
+    android: "https://yourname.github.io/ar/B.glb"
+  },
+  C: {
+    ios: "https://yourname.github.io/ar/C.usdz",
+    android: "https://yourname.github.io/ar/C.glb"
+  }
+};
+
+// ===== 端末判定 =====
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/i.test(ua);
+const isAndroid = /Android/i.test(ua);
+
+// ===== Analytics送信 =====
+if(model){
+  gtag('event', 'model_view', {
+    model_name: model,
+    device: isIOS ? "iOS" : isAndroid ? "Android" : "Other"
+  });
+}
+
+// ===== 0.3秒後に自動AR起動 =====
+setTimeout(() => {
+
+  if(!model || !models[model]) return;
+
+  if(isIOS){
+    // AR Quick Look
+    window.location.href = models[model].ios;
+  }
+
+  if(isAndroid){
+    // Scene Viewer
+    const sceneUrl =
+      "intent://arvr.google.com/scene-viewer/1.0?file=" +
+      encodeURIComponent(models[model].android) +
+      "&mode=ar_only#Intent;scheme=https;package=com.google.ar.core;end;";
+    window.location.href = sceneUrl;
+  }
+
+}, 300);
+
+</script>
+
+</body>
+</html>
