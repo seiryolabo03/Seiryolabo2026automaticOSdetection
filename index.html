@@ -1,66 +1,224 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>AR Model Viewer</title>
-
-<script type="module"
-  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR Exhibition</title>
 
 <style>
-body { margin:0; font-family:sans-serif; text-align:center; }
-#selectScreen { margin-top:50px; }
-button { font-size:18px; padding:10px 20px; margin:10px; }
-model-viewer { width:100%; height:100vh; display:none; }
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#000;
+  color:#fff;
+  text-align:center;
+}
+
+.corner-logo{
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  width:100px;
+  opacity:0.8;
+  z-index:999;
+}
+
+header{
+  padding:30px 0 10px 0;
+}
+
+h2{
+  margin:0 0 30px 0;
+  font-weight:normal;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
+  padding:20px;
+  max-width:600px;
+  margin:auto;
+}
+
+.card{
+  background:rgba(255,255,255,0.08);
+  border-radius:16px;
+  overflow:hidden;
+  backdrop-filter:blur(6px);
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:scale(1.05);
+}
+
+.card img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+}
+
+.card-title{
+  padding:12px;
+  font-size:16px;
+}
+
+.center-card{
+  grid-column:1 / span 2;
+  justify-self:center;
+  width:70%;
+}
 </style>
-</head>
-
-<body>
-
-<div id="selectScreen">
-  <h2>モデルを選択</h2>
-  <button onclick="location.href='?model=A'">A</button>
-  <button onclick="location.href='?model=B'">B</button>
-  <button onclick="location.href='?model=C'">C</button>
-</div>
-
-<model-viewer
-  id="viewer"
-  ar
-  ar-modes="scene-viewer quick-look webxr"
-  camera-controls
-  auto-rotate>
-</model-viewer>
 
 <script>
-const selectScreen = document.getElementById("selectScreen");
-const viewer = document.getElementById("viewer");
+const GA_ID = "G-63KRRF9EPX";
+const WORK_NAME = "school-exhibition-2026";
 
-const params = new URLSearchParams(window.location.search);
-const model = params.get("model");
+const BASE_URL = "https://seiryolabo03.github.io/Seiryolabo2026automaticOSdetection/";
 
-function isIOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const MODELS = {
+  modelA: {
+    name: "作品A",
+    thumb: "thumb-a.jpg",
+    ios: BASE_URL + "graduationARmodel.usdz",
+    android: BASE_URL + "graduationARmodel.glb"
+  },
+  modelB: {
+    name: "作品B",
+    thumb: "thumb-b.jpg",
+    ios: BASE_URL + "graduationARsmall.usdz",
+    android: BASE_URL + "graduationARsmall.glb"
+  },
+  modelC: {
+    name: "作品C",
+    thumb: "thumb-c.jpg",
+    ios: BASE_URL + "graduationARmodel.usdz",
+    android: BASE_URL + "graduationARmodel.glb"
+  }
+};
+
+let gtagReady = false;
+
+function loadGA(){
+  if(window.gaLoaded) return;
+  window.gaLoaded = true;
+
+  const s1 = document.createElement("script");
+  s1.async = true;
+  s1.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+  document.head.appendChild(s1);
+
+  const s2 = document.createElement("script");
+  s2.innerHTML = `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${GA_ID}');
+  `;
+  document.head.appendChild(s2);
+
+  gtagReady = true;
 }
 
-if (model) {
-  selectScreen.style.display = "none";
-  viewer.style.display = "block";
+function track(os, modelName){
+  if(gtagReady && typeof gtag === "function"){
+    gtag("event","ar_open",{
+      platform: os,
+      work_name: WORK_NAME,
+      model: modelName
+    });
+  }
+}
 
-  // AndroidやPC用
-  viewer.src = model + ".glb";
+function openAR(modelKey){
 
-  // iOS用（Quick Look）
-  if (isIOS()) {
-    viewer.setAttribute("ios-src", model + ".usdz");
+  const model = MODELS[modelKey];
+  if(!model) return;
+
+  document.body.innerHTML =
+    "<div style='margin-top:40vh;font-size:18px;'>3Dモデルを読み込み中...</div>";
+
+  const ua = navigator.userAgent;
+
+  const isIOS =
+    /iPhone|iPad|iPod/i.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  const isAndroid = /Android/i.test(ua);
+
+  let targetURL = "";
+
+  if(isAndroid){
+    track("android", model.name);
+    targetURL =
+      "intent://arvr.google.com/scene-viewer/1.0?file=" +
+      encodeURIComponent(model.android) +
+      "&mode=ar_only&resizable=false" +
+      "#Intent;scheme=https;package=com.google.android.googlequicksearchbox;end;";
+  }
+  else if(isIOS){
+    track("ios", model.name);
+    targetURL = model.ios;
+  }
+  else{
+    document.body.innerHTML = "この端末はAR非対応です";
+    return;
   }
 
-} else {
-  selectScreen.style.display = "block";
-  viewer.style.display = "none";
+  setTimeout(()=>{
+    window.location.href = targetURL;
+  },150);
 }
+
+function showMenu(){
+  const container = document.createElement("div");
+
+  container.innerHTML = `
+    <header>
+      <h2>AR作品展示</h2>
+    </header>
+    <div class="grid" id="grid"></div>
+  `;
+
+  document.body.innerHTML = "";
+  document.body.appendChild(container);
+
+  const grid = document.getElementById("grid");
+
+  ["modelA","modelB","modelC"].forEach(key=>{
+    const card = document.createElement("div");
+    card.className = "card";
+
+    if(key === "modelC"){
+      card.classList.add("center-card");
+    }
+
+    card.onclick = ()=>openAR(key);
+
+    card.innerHTML = `
+      <img src="${MODELS[key].thumb}">
+      <div class="card-title">${MODELS[key].name}</div>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  const logo = document.createElement("img");
+  logo.src = "logo.png";
+  logo.className = "corner-logo";
+  document.body.appendChild(logo);
+}
+
+window.addEventListener("load",()=>{
+  loadGA();
+  showMenu();
+});
 </script>
 
+</head>
+<body>
+読み込み中...
 </body>
 </html>
