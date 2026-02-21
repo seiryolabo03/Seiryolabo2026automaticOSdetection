@@ -71,7 +71,6 @@ h2{
   width:70%;
 }
 
-/* ローディング画面 */
 #loading{
   position:fixed;
   inset:0;
@@ -149,7 +148,9 @@ function openAR(modelKey){
   const model = MODELS[modelKey];
   if(!model) return;
 
-  document.getElementById("loading").style.display = "flex";
+  const loading = document.getElementById("loading");
+  loading.style.display = "flex";
+  loading.innerHTML = "3Dモデルを読み込み中...";
 
   const ua = navigator.userAgent;
 
@@ -174,7 +175,7 @@ function openAR(modelKey){
     targetURL = model.ios;
   }
   else{
-    document.getElementById("loading").innerHTML = "この端末はAR非対応です";
+    loading.innerHTML = "この端末はAR非対応です";
     return;
   }
 
@@ -219,6 +220,14 @@ function showMenu(){
   logo.className = "corner-logo";
   app.appendChild(logo);
 }
+
+/* ⭐ これが戻る問題の完全解決部分 */
+window.addEventListener("pageshow", function() {
+  const loading = document.getElementById("loading");
+  if(loading){
+    loading.style.display = "none";
+  }
+});
 
 window.addEventListener("load",()=>{
   loadGA();
