@@ -1,93 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>AR Model Viewer</title>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      text-align: center;
-      background: #f5f5f5;
-    }
+<meta charset="UTF-8">
+<title>AR Model Viewer</title>
 
-    #selectScreen {
-      margin-top: 50px;
-    }
+<script type="module"
+  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+</script>
 
-    button {
-      font-size: 18px;
-      padding: 10px 20px;
-      margin: 10px;
-    }
-
-    model-viewer {
-      width: 100%;
-      height: 100vh;
-      display: none;
-    }
-  </style>
+<style>
+body { margin:0; font-family:sans-serif; text-align:center; }
+#selectScreen { margin-top:50px; }
+button { font-size:18px; padding:10px 20px; margin:10px; }
+model-viewer { width:100%; height:100vh; display:none; }
+</style>
 </head>
 
 <body>
 
-<!-- 選択画面 -->
 <div id="selectScreen">
   <h2>モデルを選択</h2>
-  <button onclick="loadModel('A')">A</button>
-  <button onclick="loadModel('B')">B</button>
-  <button onclick="loadModel('C')">C</button>
+  <button onclick="location.href='?model=A'">A</button>
+  <button onclick="location.href='?model=B'">B</button>
+  <button onclick="location.href='?model=C'">C</button>
 </div>
 
-<!-- 3D表示 -->
 <model-viewer
   id="viewer"
   ar
   ar-modes="scene-viewer quick-look webxr"
   camera-controls
-  auto-rotate
-></model-viewer>
+  auto-rotate>
+</model-viewer>
 
 <script>
-  const selectScreen = document.getElementById("selectScreen");
-  const viewer = document.getElementById("viewer");
+const selectScreen = document.getElementById("selectScreen");
+const viewer = document.getElementById("viewer");
 
-  function checkURL() {
-    const params = new URLSearchParams(window.location.search);
-    const model = params.get("model");
+const params = new URLSearchParams(window.location.search);
+const model = params.get("model");
 
-    if (model) {
-      showModel(model);
-    } else {
-      showSelect();
-    }
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+if (model) {
+  selectScreen.style.display = "none";
+  viewer.style.display = "block";
+
+  // AndroidやPC用
+  viewer.src = model + ".glb";
+
+  // iOS用（Quick Look）
+  if (isIOS()) {
+    viewer.setAttribute("ios-src", model + ".usdz");
   }
 
-  function loadModel(name) {
-    history.pushState({}, "", "?model=" + name);
-    showModel(name);
-  }
-
-  function showModel(name) {
-    selectScreen.style.display = "none";
-    viewer.style.display = "block";
-
-    viewer.src = name + ".glb"; // ← ここを自分のファイル名に合わせる
-  }
-
-  function showSelect() {
-    viewer.style.display = "none";
-    selectScreen.style.display = "block";
-  }
-
-  // 戻るボタン対応
-  window.addEventListener("popstate", function () {
-    checkURL();
-  });
-
-  // 初回読み込み
-  checkURL();
+} else {
+  selectScreen.style.display = "block";
+  viewer.style.display = "none";
+}
 </script>
 
 </body>
