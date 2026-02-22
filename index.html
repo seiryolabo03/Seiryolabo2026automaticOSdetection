@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AR Exhibition</title>
+<title>Seiryolabo ARphotograph</title>
 
 <style>
 body{
@@ -82,6 +82,14 @@ h2{
   opacity:1;
 .logo img {
   filter:brightness(1) invert(1)
+}
+
+.corner-text {
+  position: fixed;
+  bottom: 5px;
+  right: 9px;
+  front-size: 13px;
+  opacity: 0.7px;
 }
 
 /* ローディング */
@@ -236,7 +244,14 @@ function showMenu(){
   logo.src = "2DD46339-B16C-4E5B-A5A2-1042F65CA34E.jpeg";
   logo.className = "corner-logo";
   app.appendChild(logo);
+
+  const text = document.createElement("div");
+  text.className = "corner-text";
+  text.textConent = "";
+  app.appendChild(text);
+  
 }
+  
 
 /* ⭐ これが戻る問題の完全解決部分 */
 window.addEventListener("pageshow", function() {
